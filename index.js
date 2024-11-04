@@ -23,9 +23,7 @@ let users = {};
 io.sockets.on('connection', function(socket) {
     console.log("We have a new client: " + socket.id);
 
-    socket.on('userData', function(data) {
-        console.log("Server received userData with xPos:", data.xPos);
-        
+    socket.on('userData', function(data) {       
         // Add socket id to user data
         data.id = socket.id;
 
@@ -37,11 +35,9 @@ io.sockets.on('connection', function(socket) {
             color: data.color,
             petalSize: data.petalSize,
             petalCount: data.petalCount,
-            leafPositions: data.leafPositions || [],
             id: socket.id
         };
 
-        console.log("Server broadcasting userData with xPos:", users[socket.id].xPos);
         // Broadcast updated user data to all clients
         io.sockets.emit('userData', users[socket.id]);
     });
