@@ -168,7 +168,7 @@ function draw() {
 
   // Draw all flowers
   for (let id in users) {
-    console.log("drawing ", users[id].name);
+    // console.log("drawing ", users[id].name);
     users[id].draw();
   }
 }
