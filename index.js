@@ -16,6 +16,7 @@ server.listen(port, () => {
 let io = require('socket.io');
 io = new io.Server(server);
 
+// Store user flower data
 let users = {};
 
 //Establish socket connection
@@ -23,14 +24,26 @@ io.sockets.on('connection', function(socket) {
     console.log("We have a new client: " + socket.id);
 
     socket.on('userData', function(data) {
+        console.log("Server received userData with xPos:", data.xPos);
+        
         // Add socket id to user data
         data.id = socket.id;
 
-        // Store user data
-        users[socket.id] = data;
+        // Store or update user flower data
+        users[socket.id] = {
+            name: data.name,
+            xPos: data.xPos,
+            height: data.height,
+            color: data.color,
+            petalSize: data.petalSize,
+            petalCount: data.petalCount,
+            leafPositions: data.leafPositions || [],
+            id: socket.id
+        };
 
+        console.log("Server broadcasting userData with xPos:", users[socket.id].xPos);
         // Broadcast updated user data to all clients
-        io.sockets.emit('userData', data);
+        io.sockets.emit('userData', users[socket.id]);
     });
 
     socket.on('disconnect', function() {
@@ -42,4 +55,9 @@ io.sockets.on('connection', function(socket) {
         // Notify other clients about the disconnection
         io.sockets.emit('userDisconnected', socket.id);
     });
+
+    // Send existing users data to newly connected client
+    for (let userId in users) {
+        socket.emit('userData', users[userId]);
+    }
 });
