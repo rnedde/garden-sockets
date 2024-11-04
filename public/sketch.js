@@ -8,7 +8,7 @@ let currentFlower;
 let colorPicker;
 let popupActive = true;
 
-let growthInterval = 50;
+let growthInterval = 500;
 let growthSpeed = 0.1;
 let petalGrowthSpeed = 1;
 
