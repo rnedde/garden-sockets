@@ -1,6 +1,5 @@
 let socket;
 let userName;
-let osc;
 
 let color;
 let users = {};
@@ -26,13 +25,6 @@ function setup() {
   background(255);
 
   console.log("Setup started");
-
-  // Create oscillator but don't start it yet
-  osc = new p5.Oscillator();
-  osc.setType('sine');
-  osc.freq(440);
-  osc.amp(0.5);
-  console.log("Oscillator created");
 
   // Create and show the popup
   createLoginpopup();
@@ -82,7 +74,6 @@ function createLoginpopup() {
     popup.remove();
     popupActive = false;
     color = colorPicker.color().toString();
-    osc.start();  // Start oscillator after user input
     initializeSocket();
   });
 
