@@ -9,10 +9,10 @@ let colorPicker;
 let popupActive = true;
 
 let growthInterval = 500;
-let growthSpeed = 0.1;
+let growthSpeed = 10;
 let petalGrowthSpeed = 1;
 
-let initialFlowerHeight = 0;
+let initialFlowerHeight = 100;
 let initialFlowerPetalSize = 40;
 let initialFlowerPetalCount = 8;
 let defaultFlowerColor = 'red';
@@ -147,7 +147,7 @@ function initializeSocket() {
 function draw() {
   background(255);
   if (!currentFlower) return;
-  currentFlower.height += growthSpeed;
+  // currentFlower.height += growthSpeed;
 
   if (currentFlower.height > 10 && Math.floor(currentFlower.height) % growthInterval === 0) {
     currentFlower.petalSize += petalGrowthSpeed;
@@ -164,7 +164,9 @@ function draw() {
   if (socket) socket.emit('userData', updateData);
 
   for (let id in users) {
+    users[id].grow();
     users[id].draw();
+    
   }
 
   applyMask();

@@ -1,14 +1,22 @@
 class Flower {
-    constructor(name, color, petalSize, petalCount, height, xPos) {
+    constructor(name, color, petalSize, petalCount, initialHeight, xPos) {
         this.name = name;
         this.color = color;
         this.petalSize = petalSize;
         this.petalCount = petalCount;
-        this.height = height;
+        this.height = initialHeight;
         this.xPos = xPos;
         this.rightOffset = 6;
+        
+        // Define a max height the flower can asymptotically approach
+        this.maxHeight = height * 0.8;  // Set max height to 90% of canvas height
+        this.growthRate = 0.0001; // Adjust this value to control the growth speed
     }
 
+    // Update the height using a logarithmic-like function
+    grow() {
+        this.height += this.growthRate * (this.maxHeight - this.height);
+    }
 
     draw() {
         // Draw stem first
@@ -17,7 +25,7 @@ class Flower {
         // Draw flower head at final position
         noStroke();
         fill(this.color);
-        if (finalPos.x == undefined) finalPos.x = width / 2;
+        if (finalPos.x === undefined) finalPos.x = width / 2;
 
         // Draw petals at final position
         for (let angle = 0; angle < TWO_PI; angle += TWO_PI / this.petalCount) {
@@ -34,7 +42,6 @@ class Flower {
         fill(0);
         textAlign(CENTER, BOTTOM);
         text(this.name, finalPos.x, finalPos.y - this.petalSize / 2 - this.petalSize / 10);
-
     }
 
     drawStem(x, length) {
@@ -87,14 +94,10 @@ class Flower {
     }
 
     update(data) {
-        this.height = data.height;
         this.xPos = data.xPos;
-
         this.color = data.color || this.color;
         this.petalSize = data.petalSize || this.petalSize;
         this.petalCount = data.petalCount || this.petalCount;
         this.name = data.name || this.name;
-
     }
 }
-
