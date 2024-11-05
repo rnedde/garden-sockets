@@ -4,12 +4,13 @@ let userName;
 let color;
 let users = {};
 let currentFlower;
-
+let baseY;
+let topY;
 let colorPicker;
 let popupActive = true;
 
 let growthInterval = 500;
-let growthSpeed = 10;
+let growthSpeed = 0.1;
 let petalGrowthSpeed = 1;
 
 let initialFlowerHeight = 0;
@@ -17,15 +18,20 @@ let initialFlowerPetalSize = 40;
 let initialFlowerPetalCount = 8;
 let defaultFlowerColor = 'red';
 
-let maskCanvas; // Canvas for the occlusion mask
+let maskCanvas;
+let maskRadius;
+
+let flowerPositions = {};  // Store angle and radius percentage for each flower
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   maskCanvas = createGraphics(windowWidth, windowHeight);
   background(255);
 
-  console.log("Setup started");
-
+  // Calculate mask radius and initial height
+  updateMaskRadius();
+  baseY = height/2 + maskRadius; // Set to bottom of circle
+  topY = height/2 - maskRadius; // Set to top of circle
   // Create and show the popup
   createLoginpopup();
 
@@ -39,14 +45,21 @@ function setup() {
 function resizeCanvasAndFlowers() {
   resizeCanvas(windowWidth, windowHeight);
   maskCanvas = createGraphics(windowWidth, windowHeight);
+  updateMaskRadius();
+  baseY = height/2 + maskRadius;
+  topY = height/2 - maskRadius;
 
-  // Update the positions of all flowers based on the new window dimensions
+  // Update the positions of all flowers using stored angles and percentages
   for (let id in users) {
-    users[id].xPos = windowWidth / 2 + (users[id].xPos - width / 2) * (windowWidth / width);
-    users[id].height = initialFlowerHeight;  // Reset the height for regrowth, if needed
+    if (flowerPositions[id]) {
+      users[id].xPos = width/2 + cos(flowerPositions[id].angle) * (maskRadius * flowerPositions[id].radiusPercentage);
+      users[id].height = initialFlowerHeight;
+      users[id].baseY = baseY;
+      users[id].topY = topY;
+    }
   }
 
-  applyMask(); // Redraw the mask for the new size
+  applyMask();
 }
 
 // Popup when user first connects
@@ -108,7 +121,19 @@ function initializeSocket() {
 
   socket.on('connect', function () {
     console.log("Connected with socket ID:", socket.id);
-    let xPosition = random(windowWidth / 2 - windowWidth / 10, windowWidth / 2 + windowWidth / 10);
+    
+    // Generate random angle and radius percentage
+    const angle = random(PI/4, 3*PI/4);
+    const radiusPercentage = random(0, 0.9); // 0 to 90% of mask radius
+    
+    // Calculate actual x position
+    const xPosition = width/2 + cos(angle) * (maskRadius * radiusPercentage);
+
+    // Store the position data
+    flowerPositions[socket.id] = {
+      angle: angle,
+      radiusPercentage: radiusPercentage
+    };
 
     const initialData = {
       name: userName,
@@ -133,7 +158,9 @@ function initializeSocket() {
         data.petalSize || initialFlowerPetalSize,
         data.petalCount || initialFlowerPetalCount,
         data.height || initialFlowerHeight,
-        data.xPos
+        data.xPos,
+        baseY,
+        topY
       );
     }
     if (socket.id == data.id) currentFlower = users[data.id];
@@ -176,16 +203,19 @@ function applyMask() {
   maskCanvas.fill(0);
   maskCanvas.noStroke();
 
-  const radius = min(width, height) * 0.4;
   const centerX = width / 2;
   const centerY = height / 2;
 
   maskCanvas.rect(0, 0, width, height);
   maskCanvas.erase();
-  maskCanvas.ellipse(centerX, centerY, radius * 2);
+  maskCanvas.ellipse(centerX, centerY, maskRadius * 2);
   maskCanvas.noErase();
 
   blendMode(REMOVE);
   image(maskCanvas, 0, 0);
   blendMode(BLEND);
+}
+
+function updateMaskRadius() {
+  maskRadius = min(width, height) * 0.4;
 }
