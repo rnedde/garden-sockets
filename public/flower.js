@@ -38,8 +38,8 @@ class Flower {
     }
 
     drawStem(x, length) {
-        stroke(0);
-        strokeWeight(2);
+        stroke(this.color);
+        strokeWeight(4);
         noFill();
         let currentX = x;
         let currentY = height;
@@ -47,33 +47,39 @@ class Flower {
         let finalPosition;
 
         beginShape();
-        vertex(currentX, height);
-
+        curveVertex(currentX, height);  // Start point
+        curveVertex(currentX, height);  // Repeat for curve smoothing
+        
         if (length <= height) {
-            currentY = height - length;
-            vertex(currentX, currentY);
-            finalPosition = { x: currentX, y: currentY };
+            // Add some gentle curves for short stems
+            curveVertex(currentX - 10, height - length/3);
+            curveVertex(currentX + 10, height - length*2/3);
+            curveVertex(currentX, height - length);
+            curveVertex(currentX, height - length);
+            finalPosition = { x: currentX, y: height - length };
         } else {
             let progress = length;
             let segmentStart = height;
+            let waveAmount = 500;  // How much the stem waves left and right
 
             while (progress > 0) {
                 if (goingUp) {
                     currentY = height - min(progress, height);
-                    vertex(currentX, currentY);
+                    // Add wavy effect
+                    curveVertex(currentX + sin(currentY/50) * waveAmount, currentY);
                     if (currentY <= 0) {
                         currentX += this.rightOffset;
-                        vertex(currentX, currentY);
+                        curveVertex(currentX, currentY);
                         goingUp = false;
                         segmentStart = 0;
                     }
                 } else {
                     let distanceFromTop = min(progress, height);
                     currentY = segmentStart + distanceFromTop;
-                    vertex(currentX, currentY);
+                    curveVertex(currentX, currentY);
                     if (currentY >= height) {
                         currentX += this.rightOffset;
-                        vertex(currentX, currentY);
+                        curveVertex(currentX, currentY);
                         goingUp = true;
                         segmentStart = height;
                     }
