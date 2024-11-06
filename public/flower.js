@@ -1,5 +1,5 @@
 class Flower {
-    constructor(name, color, petalSize, petalCount, initialHeight, xPos) {
+    constructor(name, color, petalSize, petalCount, height, xPos) {
         this.name = name;
         this.color = color;
         this.petalSize = petalSize;
@@ -7,10 +7,6 @@ class Flower {
         this.height = initialHeight;
         this.xPos = xPos;
         this.rightOffset = 6;
-        
-        // Define a max height the flower can asymptotically approach
-        this.maxHeight = height * 0.8;  // Set max height to 90% of canvas height
-        this.growthRate = 0.0001; // Adjust this value to control the growth speed
     }
 
     // Update the height using a logarithmic-like function
@@ -25,7 +21,7 @@ class Flower {
         // Draw flower head at final position
         noStroke();
         fill(this.color);
-        if (finalPos.x === undefined) finalPos.x = width / 2;
+        if (finalPos.x == undefined) finalPos.x = width / 2;
 
         // Draw petals at final position
         for (let angle = 0; angle < TWO_PI; angle += TWO_PI / this.petalCount) {
@@ -45,50 +41,52 @@ class Flower {
     }
 
     drawStem(x, length) {
-        stroke(0);
-        strokeWeight(2);
+        stroke(this.color);
+        strokeWeight(4);
         noFill();
         let currentX = x;
-        let currentY = height;
+        let currentY = this.baseY;
         let goingUp = true;
-        let finalPosition;
+        let finalPosition = { x: currentX, y: currentY };
 
         beginShape();
-        vertex(currentX, height);
-
-        if (length <= height) {
-            currentY = height - length;
-            vertex(currentX, currentY);
-            finalPosition = { x: currentX, y: currentY };
-        } else {
-            let progress = length;
-            let segmentStart = height;
-
-            while (progress > 0) {
-                if (goingUp) {
-                    currentY = height - min(progress, height);
-                    vertex(currentX, currentY);
-                    if (currentY <= 0) {
-                        currentX += this.rightOffset;
-                        vertex(currentX, currentY);
-                        goingUp = false;
-                        segmentStart = 0;
-                    }
-                } else {
-                    let distanceFromTop = min(progress, height);
-                    currentY = segmentStart + distanceFromTop;
-                    vertex(currentX, currentY);
-                    if (currentY >= height) {
-                        currentX += this.rightOffset;
-                        vertex(currentX, currentY);
-                        goingUp = true;
-                        segmentStart = height;
-                    }
+        curveVertex(currentX, this.baseY);  // Start point
+        curveVertex(currentX, this.baseY);  // Repeat for curve smoothing
+        
+        let progress = length;
+        let segmentLength = 200;  // Length of each up/down segment
+        
+        while (progress > 0) {
+            if (goingUp) {
+                let segmentEnd = currentY - min(progress, segmentLength);
+                // Create gentle upward S-curve
+                curveVertex(currentX - 10, currentY - (currentY - segmentEnd)/3);
+                curveVertex(currentX + 10, currentY - (currentY - segmentEnd)*2/3);
+                curveVertex(currentX, segmentEnd);
+                
+                currentY = segmentEnd;
+                if (currentY <= this.topY + this.petalSize*3) {
+                    currentX += this.rightOffset;
+                    goingUp = false;
                 }
-                progress -= min(progress, height);
-                finalPosition = { x: currentX, y: currentY };
+            } else {
+                let segmentEnd = currentY + min(progress, segmentLength);
+                // Create gentle downward S-curve
+                curveVertex(currentX - 10, currentY + (segmentEnd - currentY)/3);
+                curveVertex(currentX + 10, currentY + (segmentEnd - currentY)*2/3);
+                curveVertex(currentX, segmentEnd);
+                
+                currentY = segmentEnd;
+                if (currentY >= this.baseY) {
+                    currentX += this.rightOffset;
+                    goingUp = true;
+                }
             }
+            progress -= min(progress, segmentLength);
+            finalPosition = { x: currentX, y: currentY };
         }
+        
+        curveVertex(currentX, currentY);  // Repeat end point for curve smoothing
         endShape();
         return finalPosition;
     }
@@ -99,5 +97,6 @@ class Flower {
         this.petalSize = data.petalSize || this.petalSize;
         this.petalCount = data.petalCount || this.petalCount;
         this.name = data.name || this.name;
+
     }
 }
