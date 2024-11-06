@@ -117,5 +117,5 @@ function drawScene() {
     drawOcclusionFrame();
 }
 
-drawBackground(); // Initial background draw
+// drawBackground(); // Initial background draw
 drawScene();      // Initial scene draw

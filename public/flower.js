@@ -1,13 +1,21 @@
+//flower class with working log function
+
 class Flower {
-    constructor(name, color, petalSize, petalCount, height, xPos) {
-        this.name = name;
-        this.color = color;
-        this.petalSize = petalSize;
-        this.petalCount = petalCount;
-        this.height = initialHeight;
-        this.xPos = xPos;
-        this.rightOffset = 6;
-    }
+    
+        constructor(name, color, petalSize, petalCount, initialHeight, xPos, baseY, topY) {
+            this.name = name;
+            this.color = color;
+            this.petalSize = petalSize;
+            this.petalCount = petalCount;
+            this.height = initialHeight;
+            this.xPos = xPos;
+            this.baseY = baseY;
+            this.topY = topY;
+            this.rightOffset = 6;
+            this.maxHeight = height * 0.8;
+            this.growthRate = 0.00005;
+        }
+    
 
     // Update the height using a logarithmic-like function
     grow() {
@@ -16,12 +24,12 @@ class Flower {
 
     draw() {
         // Draw stem first
-        let finalPos = this.drawStem(this.xPos, this.height);
+        let finalPos = this.drawStem(this.xPos * width, this.height);
 
         // Draw flower head at final position
         noStroke();
         fill(this.color);
-        if (finalPos.x == undefined) finalPos.x = width / 2;
+        if (finalPos.x === undefined) finalPos.x = width / 2;
 
         // Draw petals at final position
         for (let angle = 0; angle < TWO_PI; angle += TWO_PI / this.petalCount) {
@@ -37,11 +45,12 @@ class Flower {
         // Draw username at final position
         fill(0);
         textAlign(CENTER, BOTTOM);
-        text(this.name, finalPos.x, finalPos.y - this.petalSize / 2 - this.petalSize / 10);
+        textFont('Courier New');
+        text(this.name, finalPos.x, finalPos.y - this.petalSize / 2 - 10);
     }
 
     drawStem(x, length) {
-        stroke(this.color);
+        stroke(10,150,0);
         strokeWeight(4);
         noFill();
         let currentX = x;
@@ -52,30 +61,30 @@ class Flower {
         beginShape();
         curveVertex(currentX, this.baseY);  // Start point
         curveVertex(currentX, this.baseY);  // Repeat for curve smoothing
-        
+
         let progress = length;
         let segmentLength = 200;  // Length of each up/down segment
-        
+
         while (progress > 0) {
             if (goingUp) {
                 let segmentEnd = currentY - min(progress, segmentLength);
                 // Create gentle upward S-curve
-                curveVertex(currentX - 10, currentY - (currentY - segmentEnd)/3);
-                curveVertex(currentX + 10, currentY - (currentY - segmentEnd)*2/3);
+                curveVertex(currentX - 10, currentY - (currentY - segmentEnd) / 3);
+                curveVertex(currentX + 10, currentY - (currentY - segmentEnd) * 2 / 3);
                 curveVertex(currentX, segmentEnd);
-                
+
                 currentY = segmentEnd;
-                if (currentY <= this.topY + this.petalSize*3) {
+                if (currentY <= this.topY + this.petalSize * 3) {
                     currentX += this.rightOffset;
                     goingUp = false;
                 }
             } else {
                 let segmentEnd = currentY + min(progress, segmentLength);
                 // Create gentle downward S-curve
-                curveVertex(currentX - 10, currentY + (segmentEnd - currentY)/3);
-                curveVertex(currentX + 10, currentY + (segmentEnd - currentY)*2/3);
+                curveVertex(currentX - 10, currentY + (segmentEnd - currentY) / 3);
+                curveVertex(currentX + 10, currentY + (segmentEnd - currentY) * 2 / 3);
                 curveVertex(currentX, segmentEnd);
-                
+
                 currentY = segmentEnd;
                 if (currentY >= this.baseY) {
                     currentX += this.rightOffset;
@@ -85,7 +94,7 @@ class Flower {
             progress -= min(progress, segmentLength);
             finalPosition = { x: currentX, y: currentY };
         }
-        
+
         curveVertex(currentX, currentY);  // Repeat end point for curve smoothing
         endShape();
         return finalPosition;
@@ -97,6 +106,5 @@ class Flower {
         this.petalSize = data.petalSize || this.petalSize;
         this.petalCount = data.petalCount || this.petalCount;
         this.name = data.name || this.name;
-
     }
 }

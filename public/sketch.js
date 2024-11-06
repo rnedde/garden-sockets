@@ -9,13 +9,13 @@ let topY;
 let colorPicker;
 let popupActive = true;
 
-let growthInterval = 500;
-let growthSpeed = 10;
-let petalGrowthSpeed = 1;
+let growthInterval = 25;
+let growthSpeed = 0.1;
+let petalGrowthSpeed = 0.1;
 
-let initialFlowerHeight = 100;
+let initialFlowerHeight = 30;
 let initialFlowerPetalSize = 40;
-let initialFlowerPetalCount = 8;
+let initialFlowerPetalCount = 7;
 let defaultFlowerColor = 'red';
 
 let maskCanvas;
@@ -35,8 +35,8 @@ function setup() {
   // Create and show the popup
   createLoginpopup();
 
-  // Add the CSS styles
-  addpopupStyles();
+  // // Add the CSS styles
+  // addpopupStyles();
 
   // Handle window resizing
   window.addEventListener('resize', resizeCanvasAndFlowers);
@@ -46,17 +46,15 @@ function resizeCanvasAndFlowers() {
   resizeCanvas(windowWidth, windowHeight);
   maskCanvas = createGraphics(windowWidth, windowHeight);
   updateMaskRadius();
-  baseY = height/2 + maskRadius;
-  topY = height/2 - maskRadius;
+  baseY = height / 2 + maskRadius;
+  topY = height / 2 - maskRadius;
 
-  // Update the positions of all flowers using stored angles and percentages
   for (let id in users) {
-    if (flowerPositions[id]) {
-      users[id].xPos = width/2 + cos(flowerPositions[id].angle) * (maskRadius * flowerPositions[id].radiusPercentage);
-      users[id].height = initialFlowerHeight;
-      users[id].baseY = baseY;
-      users[id].topY = topY;
-    }
+      if (flowerPositions[id]) {
+          users[id].xPos = (width / 2 + cos(flowerPositions[id].angle) * (maskRadius * flowerPositions[id].radiusPercentage)) / width;
+          users[id].baseY = baseY;
+          users[id].topY = topY;
+      }
   }
 
   applyMask();
@@ -78,7 +76,9 @@ function createLoginpopup() {
   nameInput.parent(popupContent);
 
   colorPicker = createColorPicker('#ff0000');
-  colorPicker.parent(popupContent);
+colorPicker.class('custom-color-picker'); // Add custom class
+colorPicker.parent(popupContent);
+
 
   const submitButton = createButton('Join Garden');
   submitButton.parent(popupContent);
@@ -93,27 +93,28 @@ function createLoginpopup() {
   popupContent.parent(popup);
 }
 
-function addpopupStyles() {
-  const style = createElement('style', `
-    .popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .popup-content {
-      background-color: white;
-      padding: 20px;
-    }
-  `);
-  style.parent(document.head);
-}
+// function addpopupStyles() {
+//   const style = createElement('style', `
+//     .popup {
+//       position: fixed;
+//       top: 0;
+//       left: 0;
+//       width: 100%;
+//       height: 100%;
+//       background-color: rgba(0, 0, 0, 0.5);
+//       display: flex;
+//       justify-content: center;
+//       align-items: center;
+//       z-index: 1000;
+
+//     }
+//     .popup-content {
+//       background-color: white;
+//       padding: 20px;
+//     }
+//   `);
+//   style.parent(document.head);
+// }
 
 // Initialize socket connection
 function initializeSocket() {
@@ -126,8 +127,8 @@ function initializeSocket() {
     const angle = random(PI/4, 3*PI/4);
     const radiusPercentage = random(0, 0.9); // 0 to 90% of mask radius
     
-    // Calculate actual x position
-    const xPosition = width/2 + cos(angle) * (maskRadius * radiusPercentage);
+    // Calculate x position based on percentage of width
+    const xPosition = (width/2 + cos(angle) * (maskRadius * radiusPercentage))/width;
 
     // Store the position data
     flowerPositions[socket.id] = {
@@ -191,9 +192,8 @@ function draw() {
   if (socket) socket.emit('userData', updateData);
 
   for (let id in users) {
-    users[id].grow();
     users[id].draw();
-    
+    users[id].grow();
   }
 
   applyMask();
@@ -202,7 +202,7 @@ function draw() {
 function applyMask() {
   maskCanvas.clear();
 
-  maskCanvas.fill(0);
+  maskCanvas.fill(0,0,0,200);
   maskCanvas.noStroke();
 
   const centerX = width / 2;

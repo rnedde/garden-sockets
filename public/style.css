@@ -4,6 +4,7 @@ html {
   padding: 0;
   overflow: hidden;
   height: 100%;
+  font-family:'Courier New', Courier, monospace
 }
 
 #backgroundCanvas,
@@ -13,3 +14,40 @@ html {
   left: 0;
 }
 
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  
+}
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.custom-color-picker {
+  
+  height: 30px; /* Match the height of other input elements */
+  padding: 5px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 14px;
+  margin: 5px;
+}
+
+
+button{
+  font-family: 'Courier New', Courier, monospace;
+}
+input{
+  font-family: 'Courier New', Courier, monospace
+}
